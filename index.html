@@ -19,6 +19,27 @@
         }
         h1 { color: blue; }
         h2 { color: green; }
+        <style>
+    /* ... existing CSS for #map, h1, h2 ... */
+    
+    /* ADD THIS LEGEND CSS */
+    .legend {
+        line-height: 18px;
+        color: #555;
+        background: white;
+        padding: 6px 8px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin-right: 8px;
+        opacity: 0.7;
+    }
+</style>
     </style>
 </head>
 <body>
@@ -89,7 +110,25 @@
         };
 
         L.control.layers(baseMaps).addTo(map);
+        // ... existing L.control.layers(baseMaps).addTo(map); code is here ...
+
+// ADD THIS LEGEND JAVASCRIPT
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'info legend');
+    
+    // Legend content (matches your parcel colors)
+    div.innerHTML += '<b>Legend</b><br>';
+    div.innerHTML += '<i style="background:#9ACD32"></i> Digitized Land Parcels<br>';
+    div.innerHTML += '<i style="background:#000000"></i> Parcel Boundary';
+    
+    return div;
+};
+
+legend.addTo(map);
 
     </script>
 </body>
+
 </html>
