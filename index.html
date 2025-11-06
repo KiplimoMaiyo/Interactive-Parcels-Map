@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive GIS Map</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-search/dist/leaflet-search.min.css" />
+
+    <style>
+        /* CSS: Give the map container a fixed size */
+        #map { 
+            height: 600px;
+            width: 100%; 
+            border: 2px solid black;
+            margin: 20px auto; 
+        }
+        h1 { color: blue; }
+        h2 { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to My GIS Project</h1>
+    <h2>View Digitized Land Parcels</h2>
+    <div id="map"></div>
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script src="https://unpkg.com/leaflet-search/dist/leaflet-search.min.js"></script>
+
+    <script>
+        // 1. Initialize the Map and set initial view 
+        var map = L.map('map').setView([-1.3733, 38.0088], 15);
+
+        // --- BASE MAP DEFINITIONS ---
+        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        });
+        var esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 18,
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA FSA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, swisstopo, and the GIS User Community'
+        });
+        osm.addTo(map); 
+
+        // --- PARCEL DATA LOADING (GeoJSON) ---
+        fetch('PARCELS.geojson') 
+            .then(response => response.json())
+            .then(data => {
+                // Create the GeoJSON Layer 
+                var parcelLayer = L.geoJSON(data, {
+                    style: function(feature) {
+                        return {color: 'black', weight: 2, opacity: 1, fillColor: '#9ACD32', fillOpacity: 0.6};
+                    },
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties) {
+                            let p = feature.properties;
+                            let popupContent = `
+                                <h4>Parcel Details</h4>
+                                <b>Parcel No:</b> ${p.Parcel_no || 'N/A'}<br>
+                                <b>Owner Name:</b> ${p.Owner_name || 'N/A'}<br>
+                                <b>Area (Ha):</b> ${p.Area_Ha || 'N/A'}<br>
+                                <b>Tenure:</b> ${p.Tenure_typ || 'N/A'}<br>
+                                <b>Location:</b> ${p.Location || 'N/A'}
+                            `;
+                            layer.bindPopup(popupContent);
+                        }
+                    }
+                }).addTo(map);
+
+                // *** NEW CODE: ADD SEARCH CONTROL ***
+                map.addControl( new L.Control.Search({
+                    layer: parcelLayer, 
+                    propertyName: 'Parcel_no', // Set the search field to the Parcel Number
+                    initial: false, 
+                    zoom: 16 
+                }) );
+                
+                // Zoom to fit the entire extent of the parcels after loading
+                map.fitBounds(parcelLayer.getBounds());
+            });
+
+        // --- LAYER CONTROL ---
+        var baseMaps = {
+            "Street Map": osm,
+            "Satellite Imagery": esriImagery
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+
+    </script>
+</body>
+</html>
