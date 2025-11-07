@@ -1,0 +1,15 @@
+{
+"type": "FeatureCollection",
+"name": "ASSETS",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Asset ID": 1, "Status": "Good" }, "geometry": { "type": "Point", "coordinates": [ 36.961068681566211, -0.432833481418661 ] } },
+{ "type": "Feature", "properties": { "Asset ID": 2, "Status": "Damaged" }, "geometry": { "type": "Point", "coordinates": [ 36.960305759427222, -0.432014570597927 ] } },
+{ "type": "Feature", "properties": { "Asset ID": 3, "Status": "Good" }, "geometry": { "type": "Point", "coordinates": [ 36.959293036621652, -0.431134820785345 ] } },
+{ "type": "Feature", "properties": { "Asset ID": 4, "Status": "Good" }, "geometry": { "type": "Point", "coordinates": [ 36.957698947831709, -0.429601293975616 ] } },
+{ "type": "Feature", "properties": { "Asset ID": 5, "Status": "Pending" }, "geometry": { "type": "Point", "coordinates": [ 36.955514479631276, -0.428114120327136 ] } },
+{ "type": "Feature", "properties": { "Asset ID": 7, "Status": "Repaired" }, "geometry": { "type": "Point", "coordinates": [ 36.951842796121944, -0.424411636109965 ] } },
+{ "type": "Feature", "properties": { "Asset ID": 8, "Status": "Damaged" }, "geometry": { "type": "Point", "coordinates": [ 36.951238252756127, -0.423710539524509 ] } },
+{ "type": "Feature", "properties": { "Asset ID": 9, "Status": "Good" }, "geometry": { "type": "Point", "coordinates": [ 36.950300534532147, -0.42273808175896 ] } }
+]
+}
