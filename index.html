@@ -6,8 +6,8 @@
     <title>Interactive GIS Map</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet-search/dist/leaflet-search.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
 
     <style>
         /* CSS: Give the map container a fixed size */
@@ -19,27 +19,23 @@
         }
         h1 { color: blue; }
         h2 { color: green; }
-        <style>
-    /* ... existing CSS for #map, h1, h2 ... */
-    
-    /* ADD THIS LEGEND CSS */
-    .legend {
-        line-height: 18px;
-        color: #555;
-        background: white;
-        padding: 6px 8px;
-        box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        border-radius: 5px;
-        font-size: 14px;
-    }
-    .legend i {
-        width: 18px;
-        height: 18px;
-        float: left;
-        margin-right: 8px;
-        opacity: 0.7;
-    }
-</style>
+        /* Legend CSS */
+        .legend {
+            line-height: 18px;
+            color: #555;
+            background: white;
+            padding: 6px 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -48,8 +44,8 @@
     <div id="map"></div>
     
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
     <script src="https://unpkg.com/leaflet-search/dist/leaflet-search.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script> 
 
     <script>
         // 1. Initialize the Map and set initial view 
@@ -90,45 +86,85 @@
                         }
                     }
                 }).addTo(map);
+                // --- ASSET DATA LOADING (The Field Inspection Targets) ---
+fetch('ASSETS.geojson') 
+    .then(response => response.json())
+    .then(assetData => {
+        // Define a custom marker style (a red circle marker)
+        var assetStyle = {
+            radius: 8,
+            fillColor: "#FF0000", // Red color to signify inspection target
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        };
 
-                // *** NEW CODE: ADD SEARCH CONTROL ***
+        // Create the GeoJSON Layer for Assets
+        var assetLayer = L.geoJSON(assetData, {
+            pointToLayer: function (feature, latlng) {
+                // Use the custom circle marker style
+                return L.circleMarker(latlng, assetStyle);
+            },
+            onEachFeature: function(feature, layer) {
+                if (feature.properties) {
+                    let p = feature.properties;
+                    // Pop-up shows the Asset_ID and Status for the field worker
+                    let popupContent = `
+                        <h4>Inspection Target</h4>
+                        <b>Asset ID:</b> ${p.Asset_ID || 'N/A'}<br>
+                        <b>Status:</b> ${p.Status || 'N/A'} 
+                    `;
+                    layer.bindPopup(popupContent);
+                }
+            }
+        }).addTo(map); // Add assets to the map
+    });
+
+                // *** ADD SEARCH CONTROL (Must be inside the .then block) ***
                 map.addControl( new L.Control.Search({
                     layer: parcelLayer, 
-                    propertyName: 'Parcel_no', // Set the search field to the Parcel Number
+                    propertyName: 'Parcel_no', 
                     initial: false, 
                     zoom: 16 
                 }) );
                 
-                // Zoom to fit the entire extent of the parcels after loading
                 map.fitBounds(parcelLayer.getBounds());
             });
 
-        // --- LAYER CONTROL ---
+        // --- CONTROL ADDITIONS (Layer Control, Locate Control, Legend) ---
         var baseMaps = {
             "Street Map": osm,
             "Satellite Imagery": esriImagery
         };
 
         L.control.layers(baseMaps).addTo(map);
-        // ... existing L.control.layers(baseMaps).addTo(map); code is here ...
-
-// ADD THIS LEGEND JAVASCRIPT
+        
+        // GEOLOCATION CONTROL (Locate Me button)
+        L.control.locate({
+            position: 'topleft', 
+            setView: 'once',    
+            flyTo: true,        
+            strings: {
+                title: "Show my location" 
+            }
+        }).addTo(map);
+        
+        // LEGEND CONTROL (Updated to include Asset Points)
 var legend = L.control({position: 'bottomright'});
-
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
     
-    // Legend content (matches your parcel colors)
+    // Note: The Asset Point uses a circle marker, so we simulate it with a square background
     div.innerHTML += '<b>Legend</b><br>';
-    div.innerHTML += '<i style="background:#9ACD32"></i> Digitized Land Parcels<br>';
-    div.innerHTML += '<i style="background:#000000"></i> Parcel Boundary';
+    div.innerHTML += '<i style="background:#9ACD32"></i> Land Parcels<br>';
+    div.innerHTML += '<i style="background:#FF0000; border-radius: 50%;"></i> Inspection Targets<br>'; // Red circle
+    div.innerHTML += '<i style="background:#000000"></i> Boundary Line';
     
     return div;
 };
-
 legend.addTo(map);
 
     </script>
 </body>
-
 </html>
